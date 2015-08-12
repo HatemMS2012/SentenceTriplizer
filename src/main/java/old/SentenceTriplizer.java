@@ -1,4 +1,6 @@
-package hms.sentence.triplization;
+package old;
+
+import hms.sentence.triplization.SentenceTriple;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -618,7 +620,7 @@ public class SentenceTriplizer {
 //			country of origin of the creative work or subject item
 //			Map<Integer, SentenceTriple> results = extractTriples("person or institution organizing an event");
 			
-			Map<Integer, SentenceTriple> results = extractTriples("subject has brother");
+			Map<Integer, SentenceTriple> results = extractTriples("John has been killed by Mary");
 
 			
 			for(Entry<Integer, SentenceTriple> res: results.entrySet()){

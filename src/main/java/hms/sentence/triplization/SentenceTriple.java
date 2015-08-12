@@ -1,10 +1,20 @@
 package hms.sentence.triplization;
 
+import java.util.List;
+import java.util.Set;
+
 public class SentenceTriple {
 
 	private String subject;
 	private String predicate;
 	private String object;
+	
+	
+	private List<String> subjectModifier;
+	private List<String> objectModifier;
+	
+	
+	
 	public String getSubject() {
 		return subject;
 	}
@@ -24,6 +34,20 @@ public class SentenceTriple {
 		this.object = object;
 	}
 	
+	
+	
+	public List<String> getSubjectModifier() {
+		return subjectModifier;
+	}
+	public void setSubjectModifier(List<String> subjectModifier) {
+		this.subjectModifier = subjectModifier;
+	}
+	public List<String> getObjectModifier() {
+		return objectModifier;
+	}
+	public void setObjectModifier(List<String> objectModifier) {
+		this.objectModifier = objectModifier;
+	}
 	@Override
 	public String toString() {
 		StringBuffer res = new StringBuffer();
