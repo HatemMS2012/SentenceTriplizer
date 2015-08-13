@@ -16,34 +16,33 @@ import edu.stanford.nlp.util.logging.RedwoodConfiguration;
 
 public class MultipleTripleExtractor {
 	
+	private final String MAIN_TIPRLE = "MAIN" ;
+	private final String SBAR_TIPRLE = "SBAR" ;
 	
 	private static StanfordCoreNLP pipeline ;
 	
 	private TripleExtractor tripleExtractor;
-	private Map<Integer,SentenceTriple> sentensTripleMap;
+	private Map<String,SentenceTriple> sentensTripleMap;
 
 	
 	public MultipleTripleExtractor(TripleExtractor tripleExtractor) {
 		init();
 		this.tripleExtractor = tripleExtractor;
-		sentensTripleMap = new HashMap<Integer,SentenceTriple>();
+		sentensTripleMap = new HashMap<String,SentenceTriple>();
 	}
 	
 	
 	private static void init(){
 		if(pipeline ==null){
-			RedwoodConfiguration.empty().capture(System.out).apply();
+			RedwoodConfiguration.empty().capture(System.out).apply(); //Stop logging
 			Properties props = new Properties();
 			props.put("annotators", "tokenize, ssplit, pos, parse");
 			pipeline= new StanfordCoreNLP(props, false);
-	        RedwoodConfiguration.current().clear().apply();
+	        RedwoodConfiguration.current().clear().apply(); //Reactivate logging
 		}
 		
 	}
-	
-	
-	
-	
+		
 	
 	public TripleExtractor getTripleExtractor() {
 		return tripleExtractor;
@@ -55,18 +54,18 @@ public class MultipleTripleExtractor {
 	}
 
 
-	public Map<Integer, SentenceTriple> getSentensTripleMap() {
+	public Map<String, SentenceTriple> getSentensTripleMap() {
 		return sentensTripleMap;
 	}
 
 
-	public void setSentensTripleMap(Map<Integer, SentenceTriple> sentensTripleMap) {
+	public void setSentensTripleMap(Map<String, SentenceTriple> sentensTripleMap) {
 		this.sentensTripleMap = sentensTripleMap;
 	}
 
 
 	/**
-	 * Extract a triple of subject, predicate and object from a given sentence
+	 * Extract triples (subject, predicate and object) from the sentences of a given text
 	 * The implementation follow the algorithm described in:
 	 * Rusu, Delia, et al. "Triplet extraction from sentences." Proceedings of the 10th International Multiconference" Information Society-IS. 2007.
 	 * @param text
@@ -76,47 +75,48 @@ public class MultipleTripleExtractor {
 
 		int sentenceId = 0;
 		
-		
-		
 		Annotation document = pipeline.process(text);
 
-		
 		for (CoreMap sentence : document.get(SentencesAnnotation.class)) {
 			Tree tree = sentence.get(TreeAnnotation.class);
-//			tree.pennPrint();
+			tree.pennPrint();
 			tripleExtractor.setSyntaxTree(tree);
-			//parse the SBAR sub tree
+		
+			//Split the parse tree of the sentence to main part and SBAR (if any)
 			List<Tree> res = tripleExtractor.splitSyntaxTree("SBAR");
 			
-			//Parse the non SBAR sub-tree
-			tripleExtractor.setSyntaxTree(res.get(1));	
-			SentenceTriple t2 = tripleExtractor.extractTriple();
-			sentensTripleMap.put(sentenceId++, t2);
+			//Extract a triple from non SBAR sub-tree
+			if(res.get(1) != null){
+				tripleExtractor.setSyntaxTree(res.get(1));	
+				SentenceTriple mainTriple = tripleExtractor.extractTriple();
+				sentensTripleMap.put(sentenceId + "-" +MAIN_TIPRLE, mainTriple);
+			}
 			
-			SentenceTriple t1 =null;
-				
+			//Extract a triple from SBAR sub-tree 
+			SentenceTriple sbarTriple =null;
 			if(res.get(0) != null){
 				tripleExtractor.setSyntaxTree(res.get(0));
-				t1 = tripleExtractor.handleSBAR(res.get(0));
-				sentensTripleMap.put(sentenceId++, t1);
+				sbarTriple = tripleExtractor.handleSBAR(tripleExtractor.getSyntaxTree());
+				sentensTripleMap.put(sentenceId + "-" +SBAR_TIPRLE , sbarTriple);
+				
 				
 			}
-	
+			sentenceId ++ ;
 		}
 
 	}
 	
 	public static void main(String[] args) {
 		
+//		
+//		String[] sentences = {"number of faces of a mathematical solid","entities owned by the subject", "artist whose work group are the likely creator of an artwork","street address that the subject is located at","educational institution attended by the subject","John killed Mary", "features depicted in a work", "Mary was killed by John", "fields related to this item",
+//				"the political party of which this politician is a member", "people who speak a language",
+//				"number of people who speak a language",
+//				"the object is a country that recognizes the subject as its citizen","country a person represents when playing a sport",
+//				"the institution holding the subject's archives","URL containing the full text for this item","pathogen of which this species is a long-term host",
+//				"specify the work that an award was given to the creator for"};
 		
-		String[] sentences = {"John killed Mary", "features depicted in a work", "Mary was killed by John", "fields related to this item",
-				"the political party of which this politician is a member", "people who speak a language",
-				"number of people who speak a language",
-				"the object is a country that recognizes the subject as its citizen","country a person represents when playing a sport",
-				"the institution holding the subject's archives","URL containing the full text for this item","pathogen of which this species is a long-term host",
-				"specify the work that an award was given to the creator for"};
-		
-//		String[] sentences = {"the institution holding the subject's archives"};
+		String[] sentences = {"female name of person of nice country of Japan"};
 		
 		TripleExtractor tet1 = new TripleExtractorStandard();
 
@@ -126,17 +126,33 @@ public class MultipleTripleExtractor {
 		
 			te.extractTriples(s);
 			
-			Map<Integer, SentenceTriple> result = te.getSentensTripleMap();
+			Map<String, SentenceTriple> result = te.getSentensTripleMap();
 			
-			System.out.println(s);
+		
 			
-			for(Entry<Integer, SentenceTriple> e : result.entrySet()){
-				System.out.println("Triple: " + e.getKey());
-				System.out.println("PRED: " + e.getValue().getPredicate());
-				System.out.println("SUB: " + e.getValue().getSubject() + " , MOD: " + e.getValue().getSubjectModifier());
-				System.out.println("OBJ: " + e.getValue().getObject() +  " , MOD: " + e.getValue().getObjectModifier());
-				
-			}
+			
+			SentenceTriple mainTriple = result.get("0-" + te.MAIN_TIPRLE) ;
+			SentenceTriple sbarTriple = result.get("0-"+te.SBAR_TIPRLE) ;
+			
+			SentenceTripleMerger m = new SentenceTripleMerger(mainTriple, sbarTriple);
+			MergedSentenceTriple finalTriple = m.merge();
+			
+			System.out.println("Triple: MERGED: " + s );
+			System.out.println("PRED: " + finalTriple.getPredicate());
+			System.out.println("SUB: " + finalTriple.getSubject());
+			System.out.println("OBJ: " + finalTriple.getObject());
+			
+//			System.out.println(" ..... Original Triples" );
+//			for(Entry<String, SentenceTriple> e : result.entrySet()){
+//				
+//			
+//				
+//				System.out.println("Triple: " + e.getKey());
+//				System.out.println("PRED: " + e.getValue().getPredicate());
+//				System.out.println("SUB: " + e.getValue().getSubject() + " , MOD: " + e.getValue().getSubjectModifier());
+//				System.out.println("OBJ: " + e.getValue().getObject() +  " , MOD: " + e.getValue().getObjectModifier());
+//				
+//			}
 
 			System.out.println(" ..............");
 	

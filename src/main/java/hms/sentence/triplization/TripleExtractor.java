@@ -1,6 +1,7 @@
 package hms.sentence.triplization;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -129,6 +130,39 @@ public abstract class TripleExtractor {
 		return currentPredicate;
 		
 	}
+	
+	private static Tree deepesNount = null;
+	
+	/**
+	 * extract the deepest noun in syntax tree
+	 * @param vpSubtree
+	 * @return
+	 */
+	private Tree extractDeepestNounPrivate(Tree vpSubtree) {
+		
+		
+//		if(vpSubtree.isLeaf())
+//			return deepesNount;
+		
+		List<Tree> subTrees = vpSubtree.getChildrenAsList();
+
+		for(Tree ch : subTrees){
+		
+			if(TagSets.nounTagSet.contains(ch.label().value())){
+				deepesNount = ch;
+			}
+			
+			extractDeepestNounPrivate(ch);
+		}
+		return deepesNount;
+		
+	}
+	
+	public Tree extractDeepestNoun(Tree vpSubtree) {
+		deepesNount = null;
+		return extractDeepestNounPrivate(vpSubtree);
+	}
+	
 	
 	public Tree extractPredicate(Tree vpSubtree) {
 		currentPredicate = null;
@@ -261,7 +295,7 @@ public abstract class TripleExtractor {
 	 * @param syntaxTree
 	 * @return
 	 */
-	private List<String> enrichFromPP(Tree npSubtree, Tree syntaxTree) {
+	protected List<String> enrichFromPP(Tree npSubtree, Tree syntaxTree) {
 	
 		List<String> modifiers = new ArrayList<String>();
 		
@@ -294,7 +328,7 @@ public abstract class TripleExtractor {
 		return modifiers;
 	}
 
-	private List<String> enrichWithModifier(Tree npSubtree, Tree sub) {
+	protected List<String> enrichWithModifier(Tree npSubtree, Tree sub) {
 	
 		List<String> modifiers = new ArrayList<String>();
 		
@@ -363,4 +397,83 @@ public abstract class TripleExtractor {
 	}
 	
 	
+	/**
+	 * Deal with the case where the syntax tree consists only of nouns
+	 * Conisder the first noun as subject and the deepest noun as object
+	 * E.g.: Number of faces of a shape (sub:number, obj:shape)
+	 * @param triple
+	 * @param root
+	 */
+	protected void handlePureNP(SentenceTriple triple, Tree root) {
+	
+		
+		Tree subject = extractSubject(root);
+		
+		if(subject!=null){
+			
+			List<String> attr = enrichWithModifier(root, subject);
+			attr.addAll(enrichFromPP(root,syntaxTree));
+			
+			triple.setSubject(subject.toString());
+			triple.setSubjectModifier(attr);
+
+			
+		}
+		
+		int countNP = getPhraseCounts(root, PhraseTypes.NOUN_PHRASE);
+		
+		Tree object = extractDeepestNoun(root);
+
+		if(countNP > 1) {
+			if(object!=null){
+			
+				List<String> attr = enrichWithModifier(root, object);
+				attr.addAll(enrichFromPP(object,syntaxTree));
+				
+				triple.setObject(object.toString());
+				triple.setObjectModifier(attr);
+			}
+		}
+		
+	}
+	
+
+	/**
+	 * Check if the syntax tree contains a VP
+	 * @param syntaxTree
+	 * @return
+	 */
+	protected boolean isVPFreeSyntaxTree(Tree syntaxTree) {
+		
+		
+		TregexPattern tPattern = TregexPattern.compile("VP");
+		TregexMatcher tMatcher = tPattern.matcher(syntaxTree);
+
+		if (tMatcher.find()) {
+			return false;
+		}
+		return true;
+	}
+
+	
+	/**
+	 * Get the number of occurrences of a given phrase type in the syntax tree
+	 * @param root
+	 * @param phraseType
+	 * @return
+	 */
+	public int getPhraseCounts(Tree root, String phraseType){
+		
+		int countP = 0;
+		// If there are further NPs in the sentence
+
+		TregexPattern tPattern = TregexPattern.compile(phraseType);
+		TregexMatcher tMatcher = tPattern.matcher(root);
+
+		while (tMatcher.find()) {
+
+			countP++;
+		}
+		return countP;
+	}
 }

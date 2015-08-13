@@ -1,6 +1,7 @@
 package hms.sentence.triplization;
 
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +37,17 @@ public class TripleExtractorStandard extends TripleExtractor {
 		
 		//Get the root of the syntaxt tree.
 		Tree root = this.syntaxTree.firstChild();
+				
+		//TODO if the sentence does not contain a verb
+		if(isVPFreeSyntaxTree(root)){
+			
+			SentenceTriple triple = new SentenceTriple();
+			
+			handlePureNP(triple, root);
+			
+			return triple;
+		}
+		
 		
 		Tree[] children = root.children();
 		
@@ -104,11 +116,22 @@ public class TripleExtractorStandard extends TripleExtractor {
 		}
 		if(isVP && triple.getPredicate()!=null && triple.getPredicate().contains("VBN")){
 			String temp = triple.getSubject();
+			
+			List<String> tempSubModifiers = triple.getSubjectModifier();
+			List<String> tempObjModifiers = triple.getObjectModifier();
+			
 			triple.setSubject(triple.getObject());
+			triple.setSubjectModifier(tempObjModifiers);
+			
+			
 			triple.setObject(temp);
+			triple.setObjectModifier(tempSubModifiers);
+			
 		}
 		return triple;
 	}
+
+
 
 	
 

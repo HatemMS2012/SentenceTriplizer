@@ -1,5 +1,6 @@
 package hms.sentence.triplization;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -10,8 +11,8 @@ public class SentenceTriple {
 	private String object;
 	
 	
-	private List<String> subjectModifier;
-	private List<String> objectModifier;
+	private List<String> subjectModifier = new ArrayList<String>();
+	private List<String> objectModifier = new ArrayList<String>();
 	
 	
 	
