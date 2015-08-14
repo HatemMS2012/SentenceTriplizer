@@ -7,6 +7,16 @@ public class MergedSentenceTriple {
 	private Argument predicate;
 	private List<List<Argument>> subject;
 	private List<List<Argument>> object;
+	private boolean containsSBAR ;
+	
+	
+	
+	public boolean isContainsSBAR() {
+		return containsSBAR;
+	}
+	public void setContainsSBAR(boolean containsSBAR) {
+		this.containsSBAR = containsSBAR;
+	}
 	public Argument getPredicate() {
 		return predicate;
 	}

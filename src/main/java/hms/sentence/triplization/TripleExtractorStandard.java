@@ -39,7 +39,7 @@ public class TripleExtractorStandard extends TripleExtractor {
 		Tree root = this.syntaxTree.firstChild();
 				
 		//TODO if the sentence does not contain a verb
-		if(isVPFreeSyntaxTree(root)){
+		if(isVPFreeSyntaxTree()){
 			
 			SentenceTriple triple = new SentenceTriple();
 			
@@ -75,22 +75,37 @@ public class TripleExtractorStandard extends TripleExtractor {
 
 				if (tMatcher.find()) {
 					
-					Tree[] grandChildren = child.children();
-					
-					if(grandChildren.length == 2){
-						
+					Tree tempTree = tMatcher.getMatch();
+
 						objectT = new SentenceTriple();
-						handleNP(objectT, grandChildren[0]);
+						handleNP(objectT,tempTree);
 						
-						
-						subjectT = new SentenceTriple();
-						handleNP(subjectT, grandChildren[1]);
+						if(tempTree.siblings(root).size() == 1){
+							subjectT = new SentenceTriple();
+							handleNP(subjectT, tempTree.siblings(root).get(0));
+						}
 						
 						isDirectObjectSubject = true;
-					}
+
 				}
+				//if the NP has a VP child
+				
 				else{
 					handleNP(triple, child);
+				}
+				
+				 
+				//For cases lik NP (NP (NP NP) VP) Mistake a person made
+				tPattern = TregexPattern.compile("VP");
+				tMatcher = tPattern.matcher(child);
+
+				if (tMatcher.find()) {
+						
+					Tree vpTree = tMatcher.getMatch();
+						
+					handleVP(triple, vpTree);
+					
+					isVP= true;
 				}
 				
 			}
@@ -114,7 +129,7 @@ public class TripleExtractorStandard extends TripleExtractor {
 			triple.setObject(objectT.getSubject());
 			
 		}
-		if(isVP && triple.getPredicate()!=null && triple.getPredicate().contains("VBN")){
+		if(isVP && triple.getPredicate()!=null && triple.getPredicate().contains("VBN") && !isDirectObjectSubject){
 			String temp = triple.getSubject();
 			
 			List<String> tempSubModifiers = triple.getSubjectModifier();

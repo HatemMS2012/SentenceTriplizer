@@ -30,8 +30,21 @@ public abstract class TripleExtractor {
 	 * The input syntax tree
 	 */
 	protected Tree syntaxTree;
+	protected Tree rootSyntaxTree;
 	
 	
+	
+	
+	public Tree getRootSyntaxTree() {
+		return rootSyntaxTree;
+	}
+
+
+	public void setRootSyntaxTree(Tree rootSyntaxTree) {
+		this.rootSyntaxTree = rootSyntaxTree;
+	}
+
+
 	public Tree getSyntaxTree() {
 		return syntaxTree;
 	}
@@ -281,7 +294,12 @@ public abstract class TripleExtractor {
 		if(sub!=null){
 		
 			List<String> attr = enrichWithModifier(npSubtree, sub);
-			attr.addAll(enrichFromPP(npSubtree,syntaxTree));
+			List<String> furtherAtrr = enrichFromPP(npSubtree,syntaxTree);
+			if(furtherAtrr.size() == 0){
+				//TODO CHECK Try with first chiled
+				furtherAtrr = enrichFromPP(npSubtree.firstChild(),syntaxTree);
+			}
+			attr.addAll(furtherAtrr);
 			triple.setSubject(sub.toString());
 			triple.setSubjectModifier(attr);
 			
@@ -317,7 +335,15 @@ public abstract class TripleExtractor {
 					
 					Tree modifierTree = tMatcher.getMatch().firstChild();
 					if(modifierTree!=null){
-						modifiers.add(modifierTree.firstChild().toString());
+						
+						if(modifierTree.firstChild().isLeaf()){
+								modifiers.add(modifierTree.toString());
+							
+						}
+						 else if(modifierTree.firstChild().firstChild().isLeaf()){
+							modifiers.add(modifierTree.firstChild().toString()); //TODO sometimes we should not take the first child
+						}
+						
 					}
 					
 				}
@@ -333,9 +359,20 @@ public abstract class TripleExtractor {
 		List<String> modifiers = new ArrayList<String>();
 		
 		
-		if(sub.siblings(npSubtree)!=null){
+		List<Tree> siblings = sub.siblings(npSubtree);
+		
+		if(siblings!=null && siblings.size() > 0){
 			
-			modifiers.addAll( extractAttributesForNouns(sub.siblings(npSubtree)));
+			modifiers.addAll( extractAttributesForNouns(siblings));
+		}
+		else {
+			//TODO NOT YET CHECKED Get the father of the subject 
+			Tree parent = sub.parent(npSubtree);
+			if(parent!=null){
+				List<String> res = extractAttributesForNouns(parent.siblings(npSubtree));
+				if(res!=null)
+					modifiers.addAll( res);
+			}
 		}
 		return modifiers;
 	}
@@ -424,15 +461,15 @@ public abstract class TripleExtractor {
 		
 		Tree object = extractDeepestNoun(root);
 
-		if(countNP > 1) {
-			if(object!=null){
+		if(object!=null && !object.equals(subject) && countNP > 1) {
+			
 			
 				List<String> attr = enrichWithModifier(root, object);
 				attr.addAll(enrichFromPP(object,syntaxTree));
 				
 				triple.setObject(object.toString());
 				triple.setObjectModifier(attr);
-			}
+			
 		}
 		
 	}
@@ -443,11 +480,11 @@ public abstract class TripleExtractor {
 	 * @param syntaxTree
 	 * @return
 	 */
-	protected boolean isVPFreeSyntaxTree(Tree syntaxTree) {
+	protected boolean isVPFreeSyntaxTree() {
 		
 		
 		TregexPattern tPattern = TregexPattern.compile("VP");
-		TregexMatcher tMatcher = tPattern.matcher(syntaxTree);
+		TregexMatcher tMatcher = tPattern.matcher(rootSyntaxTree);
 
 		if (tMatcher.find()) {
 			return false;

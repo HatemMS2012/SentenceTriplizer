@@ -79,6 +79,7 @@ public class MultipleTripleExtractor {
 
 		for (CoreMap sentence : document.get(SentencesAnnotation.class)) {
 			Tree tree = sentence.get(TreeAnnotation.class);
+			tripleExtractor.setRootSyntaxTree(tree);
 			tree.pennPrint();
 			tripleExtractor.setSyntaxTree(tree);
 		
@@ -109,55 +110,70 @@ public class MultipleTripleExtractor {
 	public static void main(String[] args) {
 		
 //		
-//		String[] sentences = {"number of faces of a mathematical solid","entities owned by the subject", "artist whose work group are the likely creator of an artwork","street address that the subject is located at","educational institution attended by the subject","John killed Mary", "features depicted in a work", "Mary was killed by John", "fields related to this item",
+//		String[] sentences = {"crime a person was convicted of","trouble a person was involved in","date on which the subject was born","male parent","number of faces of a mathematical solid","entities owned by the subject", "artist whose work group are the likely creator of an artwork","street address that the subject is located at","educational institution attended by the subject","John killed Mary", "features depicted in a work", "Mary was killed by John", "fields related to this item",
 //				"the political party of which this politician is a member", "people who speak a language",
 //				"number of people who speak a language",
 //				"the object is a country that recognizes the subject as its citizen","country a person represents when playing a sport",
 //				"the institution holding the subject's archives","URL containing the full text for this item","pathogen of which this species is a long-term host",
 //				"specify the work that an award was given to the creator for"};
 		
-		String[] sentences = {"female name of person of nice country of Japan"};
-		
+		String[] sentences = {"name of person or team creating cover artwork for album, single, book, etc."}; //trouble a person was involved in
+		//name of person or team creating cover artwork for album, single, book, etc.
+		//person or organization that contributed in the creation of a creative work
+		//person or architectural firm that designed this building
+		//person or organization that commissioned this work
+//		organization responsible for publishing books, periodicals or software
 		TripleExtractor tet1 = new TripleExtractorStandard();
 
 		for(String s: sentences){
 		
 			MultipleTripleExtractor  te = new MultipleTripleExtractor(tet1);
 		
-			te.extractTriples(s);
-			
-			Map<String, SentenceTriple> result = te.getSentensTripleMap();
-			
-		
-			
-			
-			SentenceTriple mainTriple = result.get("0-" + te.MAIN_TIPRLE) ;
-			SentenceTriple sbarTriple = result.get("0-"+te.SBAR_TIPRLE) ;
-			
-			SentenceTripleMerger m = new SentenceTripleMerger(mainTriple, sbarTriple);
-			MergedSentenceTriple finalTriple = m.merge();
+			MergedSentenceTriple finalTriple = te.extractMergedTriple(s);
 			
 			System.out.println("Triple: MERGED: " + s );
 			System.out.println("PRED: " + finalTriple.getPredicate());
 			System.out.println("SUB: " + finalTriple.getSubject());
 			System.out.println("OBJ: " + finalTriple.getObject());
 			
-//			System.out.println(" ..... Original Triples" );
-//			for(Entry<String, SentenceTriple> e : result.entrySet()){
-//				
-//			
-//				
-//				System.out.println("Triple: " + e.getKey());
-//				System.out.println("PRED: " + e.getValue().getPredicate());
-//				System.out.println("SUB: " + e.getValue().getSubject() + " , MOD: " + e.getValue().getSubjectModifier());
-//				System.out.println("OBJ: " + e.getValue().getObject() +  " , MOD: " + e.getValue().getObjectModifier());
-//				
-//			}
+			System.out.println(" ..... Original Triples" );
+			Map<String, SentenceTriple> result = te.getSentensTripleMap();
+			for(Entry<String, SentenceTriple> e : result.entrySet()){
+				
+			
+				
+				System.out.println("Triple: " + e.getKey());
+				System.out.println("PRED: " + e.getValue().getPredicate());
+				System.out.println("SUB: " + e.getValue().getSubject() + " , MOD: " + e.getValue().getSubjectModifier());
+				System.out.println("OBJ: " + e.getValue().getObject() +  " , MOD: " + e.getValue().getObjectModifier());
+				
+			}
 
 			System.out.println(" ..............");
 	
 		}
 	
+	}
+
+
+	/**
+	 * Extract triples from a given sentence
+	 * @param tet1
+	 * @param sentence
+	 * @return
+	 */
+	public MergedSentenceTriple extractMergedTriple(String sentence) {
+
+		extractTriples(sentence);
+		
+		Map<String, SentenceTriple> result = getSentensTripleMap();
+				
+		SentenceTriple mainTriple = result.get("0-" + MAIN_TIPRLE) ;
+		SentenceTriple sbarTriple = result.get("0-"+ SBAR_TIPRLE) ;
+		
+		SentenceTripleMerger m = new SentenceTripleMerger(mainTriple, sbarTriple);
+		MergedSentenceTriple finalTriple = m.merge();
+		return finalTriple;
 	}
 
 }

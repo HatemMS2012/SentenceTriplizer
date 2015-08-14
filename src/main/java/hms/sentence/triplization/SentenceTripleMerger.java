@@ -18,6 +18,67 @@ public class SentenceTripleMerger {
 	
 	}
 	
+	public MergedSentenceTriple merge11(){
+		
+		MergedSentenceTriple finalTriple = new MergedSentenceTriple();
+		
+		if(sbarTriple == null){
+			
+			finalTriple = handleNoSbarTriple(mainTriple);
+			
+			return finalTriple;
+		
+		}
+		if(mainTriple == null && sbarTriple !=null){
+			finalTriple = handleNoSbarTriple(sbarTriple);
+			return finalTriple;
+		}
+		
+		if(mainTriple !=null && sbarTriple != null){
+			
+			
+		}
+		return finalTriple;
+	}
+
+	
+	/**
+	 * Apply this procedure if the sbar triple is null
+	 * @return
+	 */
+	private MergedSentenceTriple handleNoSbarTriple(SentenceTriple triple) {
+		MergedSentenceTriple finalTriple = new MergedSentenceTriple();
+		
+		List<Argument> mainSubject = null;
+		List<String> mainSubjectModifiers = triple.getSubjectModifier();
+		
+		if(triple.getSubject()!=null){
+			mainSubject = mergeArgumentModifiers(triple.getSubject(), mainSubjectModifiers);
+		}
+				
+		List<Argument> mainObject = null;
+			
+		List<String> mainObjectModifiers = triple.getObjectModifier();
+			if(triple.getObject()!=null){
+				mainObject = mergeArgumentModifiers(triple.getObject(), mainObjectModifiers);
+		}
+			
+		Argument mainPred = null;
+		if(triple.getPredicate() !=null){
+			 mainPred = cleanArgument(triple.getPredicate())  ;
+		}	
+			
+		List<List<Argument>> mainSubjectList = new ArrayList<List<Argument>>();
+		mainSubjectList.add(mainSubject);
+		finalTriple.setSubject(mainSubjectList);
+		
+		List<List<Argument>> mainObjectList = new ArrayList<List<Argument>>();
+		mainObjectList.add(mainObject);
+		finalTriple.setObject(mainObjectList);
+		finalTriple.setPredicate(mainPred);
+		
+		return finalTriple;
+	}
 	
 	public MergedSentenceTriple merge(){
 		MergedSentenceTriple finalTriple = new MergedSentenceTriple();
@@ -64,6 +125,8 @@ public class SentenceTripleMerger {
 		
 		
 		//SBAR
+		finalTriple.setContainsSBAR(true);
+		
 		List<Argument> sbarSubject = null;
 		List<String> sbarSubjectModifiers = sbarTriple.getSubjectModifier();
 		if(sbarTriple.getSubject() != null){
@@ -158,6 +221,26 @@ public class SentenceTripleMerger {
 			
 		}
 		
+		//Case 3: MAIN contains only subject and SBAR is full
+		
+		if(mainTriple.getSubject()!=null && mainTriple.getObject() ==null & mainTriple.getPredicate() ==null && sbarTriple.getSubject() != null  && sbarTriple.getPredicate()  !=null &&  sbarTriple.getObject() ==null){
+					
+					List<List<Argument>> finalSubjectList = new ArrayList<List<Argument>>();
+					finalSubjectList.add(mainSubject);
+					finalTriple.setObject(finalSubjectList);
+
+					List<List<Argument>> finalObjectList = new ArrayList<List<Argument>>();
+					finalObjectList.add(sbarSubject);
+				
+					finalTriple.setSubject(finalObjectList);
+					
+//					List<Argument> predicateList = new ArrayList<Argument>();
+//					predicateList.add(sbarPred);
+					finalTriple.setPredicate(sbarPred);
+
+					
+		}
+				
 		
 		//Case 4: MAIN contains predicate and object and SBAR is full
 		if(mainTriple.getSubject()==null && mainTriple.getObject() !=null & mainTriple.getPredicate() !=null && sbarTriple.getSubject() != null  && sbarTriple.getPredicate()  !=null &&  sbarTriple.getObject() !=null){
