@@ -3,21 +3,46 @@ package hms.sentence.triplization;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.stanford.nlp.trees.Tree;
+
 
 public class SentenceTripleMerger {
 	
 	private static final String SUB_OBJ_SEP = ",";
 	private static final String MODIFIER_SPE = ",";
-	SentenceTriple mainTriple;
-	SentenceTriple sbarTriple;
+	private SentenceTriple mainTriple;
+	private SentenceTriple sbarTriple;
 	
 	public SentenceTripleMerger(SentenceTriple mainTriple, SentenceTriple sbarTriple) {
+		
 		
 		this.mainTriple = mainTriple;
 		this.sbarTriple = sbarTriple;
 	
 	}
 	
+	
+	public SentenceTriple getMainTriple() {
+		return mainTriple;
+	}
+
+
+	public void setMainTriple(SentenceTriple mainTriple) {
+		this.mainTriple = mainTriple;
+	}
+
+
+	public SentenceTriple getSbarTriple() {
+		return sbarTriple;
+	}
+
+
+	public void setSbarTriple(SentenceTriple sbarTriple) {
+		this.sbarTriple = sbarTriple;
+	}
+
+
+
 	public MergedSentenceTriple merge11(){
 		
 		MergedSentenceTriple finalTriple = new MergedSentenceTriple();
@@ -48,6 +73,8 @@ public class SentenceTripleMerger {
 	 */
 	private MergedSentenceTriple handleNoSbarTriple(SentenceTriple triple) {
 		MergedSentenceTriple finalTriple = new MergedSentenceTriple();
+		
+		
 		
 		List<Argument> mainSubject = null;
 		List<String> mainSubjectModifiers = triple.getSubjectModifier();
@@ -83,9 +110,19 @@ public class SentenceTripleMerger {
 	public MergedSentenceTriple merge(){
 		MergedSentenceTriple finalTriple = new MergedSentenceTriple();
 		
+		if(mainTriple == null && sbarTriple==null){
+			
+			return finalTriple;
+		}
 		if(mainTriple == null && sbarTriple!=null){
 			mainTriple = sbarTriple;
 			sbarTriple = null;
+		}
+		else if(mainTriple.getSubject() == null && mainTriple.getObject() == null && mainTriple.getPredicate() == null && sbarTriple!=null){
+			if(sbarTriple.getSubject()!=null || sbarTriple.getObject() != null || sbarTriple.getPredicate() !=null){
+				mainTriple = sbarTriple;
+				sbarTriple = null;
+			}
 		}
 
 		//Main
@@ -260,6 +297,8 @@ public class SentenceTripleMerger {
 
 			finalTriple.setPredicate(sbarPred);
 		}
+		
+		
 		
 		return finalTriple;
 	}

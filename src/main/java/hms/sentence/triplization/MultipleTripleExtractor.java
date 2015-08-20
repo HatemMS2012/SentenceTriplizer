@@ -1,5 +1,6 @@
 package hms.sentence.triplization;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +73,9 @@ public class MultipleTripleExtractor {
 	 */
 	public void extractTriples(String text) {
 		
-
+		if(text==null)
+			return;
+		
 		int sentenceId = 0;
 		
 		Annotation document = pipeline.process(text);
@@ -80,7 +83,7 @@ public class MultipleTripleExtractor {
 		for (CoreMap sentence : document.get(SentencesAnnotation.class)) {
 			Tree tree = sentence.get(TreeAnnotation.class);
 			tripleExtractor.setRootSyntaxTree(tree);
-			tree.pennPrint();
+//			tree.pennPrint();
 			tripleExtractor.setSyntaxTree(tree);
 		
 			//Split the parse tree of the sentence to main part and SBAR (if any)
@@ -117,7 +120,7 @@ public class MultipleTripleExtractor {
 //				"the institution holding the subject's archives","URL containing the full text for this item","pathogen of which this species is a long-term host",
 //				"specify the work that an award was given to the creator for"};
 		
-		String[] sentences = {"name of person or team creating cover artwork for album, single, book, etc."}; //trouble a person was involved in
+		String[] sentences = {"An inanimate entity or process that causes the death of the Victim"}; //trouble a person was involved in
 		//name of person or team creating cover artwork for album, single, book, etc.
 		//person or organization that contributed in the creation of a creative work
 		//person or architectural firm that designed this building
@@ -136,8 +139,10 @@ public class MultipleTripleExtractor {
 			System.out.println("SUB: " + finalTriple.getSubject());
 			System.out.println("OBJ: " + finalTriple.getObject());
 			
+						
 			System.out.println(" ..... Original Triples" );
 			Map<String, SentenceTriple> result = te.getSentensTripleMap();
+			
 			for(Entry<String, SentenceTriple> e : result.entrySet()){
 				
 			
@@ -172,7 +177,10 @@ public class MultipleTripleExtractor {
 		SentenceTriple sbarTriple = result.get("0-"+ SBAR_TIPRLE) ;
 		
 		SentenceTripleMerger m = new SentenceTripleMerger(mainTriple, sbarTriple);
+		
 		MergedSentenceTriple finalTriple = m.merge();
+		finalTriple.setCompleteSyntaxTree(tripleExtractor.getRootSyntaxTree());
+		
 		return finalTriple;
 	}
 

@@ -35,13 +35,16 @@ public class TripleExtractorStandard extends TripleExtractor {
 	 */
 	public SentenceTriple extractTriple() {
 		
+		SentenceTriple triple = new SentenceTriple();
+		
+		triple.setSentenceParseTree(syntaxTree);
+		
 		//Get the root of the syntaxt tree.
 		Tree root = this.syntaxTree.firstChild();
 				
 		//TODO if the sentence does not contain a verb
 		if(isVPFreeSyntaxTree()){
 			
-			SentenceTriple triple = new SentenceTriple();
 			
 			handlePureNP(triple, root);
 			
@@ -51,7 +54,7 @@ public class TripleExtractorStandard extends TripleExtractor {
 		
 		Tree[] children = root.children();
 		
-		SentenceTriple triple = new SentenceTriple();
+		
 		
 		boolean isVP = false;
 		

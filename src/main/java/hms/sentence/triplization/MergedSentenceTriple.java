@@ -2,13 +2,16 @@ package hms.sentence.triplization;
 
 import java.util.List;
 
+import edu.stanford.nlp.trees.Tree;
+
 public class MergedSentenceTriple {
 
 	private Argument predicate;
 	private List<List<Argument>> subject;
 	private List<List<Argument>> object;
 	private boolean containsSBAR ;
-	
+
+	private Tree completeSyntaxTree;
 	
 	
 	public boolean isContainsSBAR() {
@@ -34,6 +37,12 @@ public class MergedSentenceTriple {
 	}
 	public void setObject(List<List<Argument>> object) {
 		this.object = object;
+	}
+	public Tree getCompleteSyntaxTree() {
+		return completeSyntaxTree;
+	}
+	public void setCompleteSyntaxTree(Tree completeSyntaxTree) {
+		this.completeSyntaxTree = completeSyntaxTree;
 	}
 	
 

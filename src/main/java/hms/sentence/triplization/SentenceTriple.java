@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import edu.stanford.nlp.trees.Tree;
+
 public class SentenceTriple {
 
 	private String subject;
 	private String predicate;
 	private String object;
-	
+	private Tree sentenceParseTree;
 	
 	private List<String> subjectModifier = new ArrayList<String>();
 	private List<String> objectModifier = new ArrayList<String>();
@@ -37,6 +39,12 @@ public class SentenceTriple {
 	
 	
 	
+	public Tree getSentenceParseTree() {
+		return sentenceParseTree;
+	}
+	public void setSentenceParseTree(Tree sentenceParseTree) {
+		this.sentenceParseTree = sentenceParseTree;
+	}
 	public List<String> getSubjectModifier() {
 		return subjectModifier;
 	}
