@@ -34,6 +34,8 @@
 			<version>3.5.2</version>
 			<classifier>models</classifier>
 		</dependency>
+		
+		
 
 	</dependencies>
 </project>

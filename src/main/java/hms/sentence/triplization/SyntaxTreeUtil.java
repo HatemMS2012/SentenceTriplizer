@@ -42,9 +42,9 @@ public class SyntaxTreeUtil {
 			
 			for(Label label : labels){
 				
-				if(words.contains("-") && words.contains(label.value())){
+				if(label.toString().contains("-") && words.contains(label.value())){
 				
-					int positionInSentence = Integer.valueOf(label.toString().substring(label.toString().indexOf("-")+1, label.toString().length()));
+					int positionInSentence = Integer.valueOf(label.toString().substring(label.toString().lastIndexOf("-")+1, label.toString().length()));
 					
 					if(positionInSentence <=2)
 						return true;
