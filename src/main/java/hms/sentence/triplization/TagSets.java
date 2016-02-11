@@ -19,7 +19,7 @@ public class TagSets {
 		nounTagSet.add("NNP");
 		nounTagSet.add("NNPS");
 		nounTagSet.add("NNS");
-		nounTagSet.add("PRP");
+//		nounTagSet.add("PRP");
 		
 		verbTagSet = new HashSet<String>();
 		verbTagSet.add("VB");

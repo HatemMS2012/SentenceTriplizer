@@ -423,9 +423,10 @@ public abstract class TripleExtractor {
 			Tree sentenceRoot = tMatcher.getMatch();
 		
 			//The NP must belong to first level children of the syntax tree
-			
-			if(sentenceRoot.firstChild().label().value().equals(PhraseTypes.NOUN_PHRASE)){
-				this.handleNP(tt, sentenceRoot);
+			if(sentenceRoot.firstChild()!=null){
+				if(sentenceRoot.firstChild().label().value().equals(PhraseTypes.NOUN_PHRASE)){
+					this.handleNP(tt, sentenceRoot);
+				}
 			}
 			this.handleVP(tt, sentenceRoot);
 			

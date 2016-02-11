@@ -120,7 +120,7 @@ public class MultipleTripleExtractor {
 //				"the institution holding the subject's archives","URL containing the full text for this item","pathogen of which this species is a long-term host",
 //				"specify the work that an award was given to the creator for"};
 		
-		String[] sentences = {"An inanimate entity or process that causes the death of the Victim"}; //trouble a person was involved in
+		String[] sentences = {"The living entity that dies as a result of the killing"}; //trouble a person was involved in
 		//name of person or team creating cover artwork for album, single, book, etc.
 		//person or organization that contributed in the creation of a creative work
 		//person or architectural firm that designed this building

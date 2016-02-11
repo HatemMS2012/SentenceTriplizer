@@ -98,7 +98,7 @@ public class TripleExtractorStandard extends TripleExtractor {
 				}
 				
 				 
-				//For cases lik NP (NP (NP NP) VP) Mistake a person made
+				//For cases like NP (NP (NP NP) VP) Mistake a person made
 				tPattern = TregexPattern.compile("VP");
 				tMatcher = tPattern.matcher(child);
 
